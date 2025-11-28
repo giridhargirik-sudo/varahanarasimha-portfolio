@@ -1,0 +1,43 @@
+name: Deploy Next.js App with Docker
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Upload code to EC2
+      - name: Copy project to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "."
+          target: "~/app"
+
+      # Deploy on EC2
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            cd ~/app
+
+            # Build Docker image
+            docker build -t nextjs-portfolio .
+
+            # Stop & remove old container
+            docker stop portfolio || true
+            docker rm portfolio || true
+
+            # Run new container
+            docker run -d --name portfolio -p YOUR_CUSTOM_PORT:3000 nextjs-portfolio
