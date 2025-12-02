@@ -1,4 +1,4 @@
-name: Deploy Next.js to EC2
+name: Deploy Next.js to EC2 (No Docker, No appleboy)
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,28 +23,16 @@ jobs:
       - name: Build Next.js app
         run: npm run build
 
-      - name: Upload files to EC2
-        uses: appleboy/scp-action@v0.1.5
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_KEY }}
-          source: "."
-          target: "/home/ubuntu/my-app"
+      - name: Upload files to EC2 using rsync
+        run: |
+          rsync -avz -e "ssh -i ${{ secrets.EC2_KEY }}" ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/my-app
 
       - name: Restart app on EC2
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            cd /home/ubuntu/my-app
-
-            echo "Installing dependencies on EC2..."
-            npm install --omit=dev
-
-            echo "Restarting Next.js app with PM2..."
-            pm2 stop nextjs || true
-            pm2 delete nextjs || true
-            pm2 start npm --name "nextjs" -- start
+        run: |
+          ssh -i ${{ secrets.EC2_KEY }} ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          cd /home/ubuntu/my-app
+          npm install --omit=dev
+          pm2 stop nextjs || true
+          pm2 delete nextjs || true
+          pm2 start npm --name "nextjs" -- start
+          EOF
