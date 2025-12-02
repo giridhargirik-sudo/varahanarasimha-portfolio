@@ -24,15 +24,15 @@ jobs:
         npx next build
 
     - name: Upload full app folder to EC2
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_KEY }}
-        source: "my-app/*"
-        target: "/home/ubuntu/nextjs-app"
+  uses: appleboy/scp-action@v0.1.4
+  with:
+    host: ${{ secrets.EC2_HOST }}
+    username: ubuntu
+    key: ${{ secrets.EC2_KEY }}
+    source: "my-app/*"
+    target: "/home/ubuntu/nextjs-app"
 
-    - name: Restart Server on EC2
+      name: Restart Server on EC2 
       uses: appleboy/ssh-action@v0.1.6
       with:
         host: ${{ secrets.EC2_HOST }}
