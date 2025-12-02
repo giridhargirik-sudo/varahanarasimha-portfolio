@@ -17,35 +17,22 @@ jobs:
       with:
         node-version: '20'
 
-    - name: Install dependencies
+    - name: Install and Build Next.js
       run: |
         cd my-app
         npm install
-
-    - name: Build Next.js
-      run: |
-        cd my-app
         npx next build
 
-    - name: Upload build output to EC2
+    - name: Upload full app folder to EC2
       uses: appleboy/scp-action@v0.1.4
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
-        source: "my-app/.next"
-        target: "/home/ubuntu/nextjs-app/.next"
-
-    - name: Upload package.json
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_KEY }}
-        source: "my-app/package.json"
+        source: "my-app/*"
         target: "/home/ubuntu/nextjs-app"
 
-    - name: Restart server on EC2
+    - name: Restart Server on EC2
       uses: appleboy/ssh-action@v0.1.6
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -54,4 +41,5 @@ jobs:
         script: |
           cd /home/ubuntu/nextjs-app
           npm install --production
-          pm2 restart next-app || pm2 start npm --name "next-app" -- start
+          pm2 stop next-app || true
+          pm2 start npm --name "next-app" -- start
