@@ -1,4 +1,4 @@
-name: Deploy Next.js to EC2 (No Docker, No appleboy)
+name: Deploy Next.js to EC2
 
 on:
   push:
@@ -9,30 +9,19 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout code
+      - name: Checkout code (Force correct path)
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 22
+          fetch-depth: 0
+          clean: true
+          path: var_repo
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Build Next.js app
-        run: npm run build
-
-      - name: Upload files to EC2 using rsync
         run: |
-          rsync -avz -e "ssh -i ${{ secrets.EC2_KEY }}" ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/my-app
+          cd var_repo
+          npm install
 
-      - name: Restart app on EC2
+      - name: Build Next.js
         run: |
-          ssh -i ${{ secrets.EC2_KEY }} ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-          cd /home/ubuntu/my-app
-          npm install --omit=dev
-          pm2 stop nextjs || true
-          pm2 delete nextjs || true
-          pm2 start npm --name "nextjs" -- start
-          EOF
+          cd var_repo
+          npm run build
