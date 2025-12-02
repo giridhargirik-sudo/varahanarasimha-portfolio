@@ -9,19 +9,19 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout code (Force correct path)
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           clean: true
-          path: var_repo
+          path: repo
 
       - name: Install dependencies
         run: |
-          cd var_repo
+          cd repo
           npm install
 
-      - name: Build Next.js
+      - name: Build Next.js project
         run: |
-          cd var_repo
+          cd repo
           npm run build
