@@ -17,10 +17,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd surajbasheer/varahanarasimha-portfolio/my-app
+          cd narasimha248625/varahanarasimha-portfolio/my-app
           npm install
 
       - name: Build Next.js
         run: |
-          cd surajbasheer/varahanarasimha-portfolio/my-app
+          cd narasimha248625/varahanarasimha-portfolio/my-app
           npm run build
