@@ -87,7 +87,7 @@ const ContactPage = () => {
                     href="tel:+919959101971"
                     className="text-gray-600 hover:text-black transition-colors duration-300"
                   >
-                    +91 9959101971
+                    +91 7997162217
                   </a>
                 </div>
               </div>
