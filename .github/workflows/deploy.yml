@@ -1,0 +1,39 @@
+name: Next.js CI/CD Auto Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Docker Login
+      run: |
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login \
+        -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+    - name: Build Docker Image
+      run: |
+        cd my-app
+        docker build -t giridhargirik/nextjs-app:latest .
+
+    - name: Push Docker Image
+      run: |
+        docker push giridhargirik/nextjs-app:latest
+
+    - name: Deploy to EC2 using SSH
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          docker pull giridhargirik/nextjs-app:latest
+          docker save giridhargirik/nextjs-app:latest | sudo k3s ctr -n k8s.io images import -
+          kubectl rollout restart deployment nextjs-deployment
